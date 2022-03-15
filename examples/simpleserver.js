@@ -17,9 +17,14 @@
  */
 
 // ------------- SETTINGS
-const projectId = process.env.npm_config_PROJECT_ID;
-const example = process.env.npm_config_EXAMPLE;
-const port = ( process.env.npm_config_PORT || 3000 );
+const projectId = process.env.npm_config_project_id;
+//console.log('process=', process);
+//console.log('process.env=', process.env);
+console.log('process.env.npm_config_project_id=', process.env.npm_config_project_id);
+const example = process.env.npm_config_example;
+console.log('process.env.npm_config_example=', process.env.npm_config_example);
+const port = ( process.env.npm_config_port || 3000 );
+console.log('process.env.npm_config_port=', process.env.npm_config_port);
 
 const languageCode = 'en-US';
 let encoding = 'AUDIO_ENCODING_LINEAR_16';
