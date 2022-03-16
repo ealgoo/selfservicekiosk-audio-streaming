@@ -78,40 +78,60 @@
 
         //3)
         startRecording.onclick = function () {
-            startRecording.disabled = true;
+        // recording started
+        startRecording.disabled = true;
 
-            //4)
-            // make use of WebRTC JavaScript method getUserMedia()
-            // to capture the browser microphone stream
-            navigator.getUserMedia({
-                audio: true
-            }, function (stream) {
-
-                //5)
+        // make use of HTML 5/WebRTC, JavaScript getUserMedia()
+        // to capture the browser microphone stream
+        navigator.getUserMedia({
+            audio: true
+        }, function(stream) {
                 recordAudio = RecordRTC(stream, {
-                    type: 'audio',
+                type: 'audio',
+                mimeType: 'audio/webm',
+                sampleRate: 44100, // this sampleRate should be the same in your server code
 
-                    //6)
-                    mimeType: 'audio/webm',
-                    sampleRate: 44100,
-                    // used by StereoAudioRecorder
-                    // the range 22050 to 96000.
-                    // let us force 16khz recording:
-                    desiredSampRate: 16000,
-                    // this should match with Syour server code
+                // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
+                // CanvasRecorder, GifRecorder, WhammyRecorder
+                recorderType: StereoAudioRecorder,
 
-                    // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
-                    // CanvasRecorder, GifRecorder, WhammyRecorder
-                    recorderType: StereoAudioRecorder,
-                    // Dialogflow / STT requires mono audio
-                    numberOfAudioChannels: 1
-                });
+                // Dialogflow / STT requires mono audio
+                numberOfAudioChannels: 1,
 
-                recordAudio.startRecording();
-                stopRecording.disabled = false;
-            }, function (error) {
-                console.error(JSON.stringify(error));
+                // get intervals based blobs
+                // value in milliseconds
+                // as you might not want to make detect calls every seconds
+                timeSlice: 4000,
+
+                // only for audio track
+                // audioBitsPerSecond: 128000,
+
+                // used by StereoAudioRecorder
+                // the range 22050 to 96000.
+                // let us force 16khz recording:
+                desiredSampRate: 16000,
+
+                // as soon as the stream is available
+                ondataavailable: function(blob) {
+                    // making use of socket.io-stream for bi-directional
+                    // streaming, create a stream
+                    var stream = ss.createStream();
+                    // stream directly to server
+                    // it will be temp. stored locally
+                    ss(socket).emit('stream-transcribe', stream, {
+                        name: 'stream.wav', 
+                        size: blob.size
+                    });
+                    // pipe the audio blob to the read stream
+                    ss.createBlobReadStream(blob).pipe(stream);
+                }
             });
+
+            recordAudio.startRecording();
+            stopRecording.disabled = false;
+        }, function(error) {
+            console.error(JSON.stringify(error));
+        });
         };
 
         //7)
@@ -119,35 +139,14 @@
             // recording stopped
             startRecording.disabled = false;
             stopRecording.disabled = true;
-
-            // stop audio recorder
-            recordAudio.stopRecording(function () {
-                // after stopping the audio, get the audio data
-                recordAudio.getDataURL(function (audioDataURL) {
-
-                    //8)
-                    var files = {
-                        audio: {
-                            type: recordAudio.getBlob().type || 'audio/wav',
-                            dataURL: audioDataURL
-                        }
-                    };
-                    // submit the audio file to the server
-                    socketio.emit('message', files);
-                });
-            });
         };
         const resultpreview = document.getElementById('results');
-        const intentInput = document.getElementById('intent');
-        const textInput = document.getElementById('queryText');
         socketio.on('results', function (data) {
-            console.log(data);
             // show the results on the screen
-            if (data[0].queryResult) {
-                resultpreview.innerHTML += "" + data[0].queryResult.fulfillmentText;
-                intentInput.value = data[0].queryResult.intent.displayName;
-                textInput.value = "" + data[0].queryResult.queryText;
-            }
+            if(data && data.results[0] && data.results[0].alternatives[0]){
+            resultpreview.innerHTML += " " + data.results[0].alternatives[0].transcript;
+            //data.results[0].alternatives.forEach( (item,index)=> console.log(item,index));
+        }
         });
         let words = [
             {
