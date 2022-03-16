@@ -57,7 +57,7 @@
     socketio.on('results', function (data) {
         if(data && data.results[0] && data.results[0].alternatives[0]){
             resultpreview.innerHTML += " " + data.results[0].alternatives[0].transcript;
-            data.results[0].alternatives.foreach( (item,index)=> console.log(item,index));
+            data.results[0].alternatives.forEach( (item,index)=> console.log(item,index));
         }
     });
 
