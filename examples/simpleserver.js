@@ -114,6 +114,8 @@ function setupServer() {
             // run the simple detectIntent() function
             const results = await detectIntent(fileBuffer);
             client.emit('results', results);
+            console.log("dataURL:", dataURL)
+            console.log("results:", results)
         });
 
         // when the client sends 'message' events
@@ -126,6 +128,8 @@ function setupServer() {
             // run the simple transcribeAudio() function
             const results = await transcribeAudio(fileBuffer);
             client.emit('results', results);
+            console.log("dataURL:", dataURL)
+            console.log("results:", results)
         });
 
         // when the client sends 'stream' events
@@ -147,6 +151,7 @@ function setupServer() {
         ss(client).on('stream-transcribe', function(stream, data) {
             // get the name of the stream
             const filename = path.basename(data.name);
+            console.log(filename);
             // pipe the filename to the stream
             stream.pipe(fs.createWriteStream(filename));
             // make a detectIntStream call
@@ -289,6 +294,7 @@ function setupTTS(){
     request.inputAudio = audio;
     console.log(request);
     const responses = await sessionClient.detectIntent(request);
+    console.log(responses);
     return responses;
  }
 
