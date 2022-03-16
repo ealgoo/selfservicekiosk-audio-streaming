@@ -446,12 +446,13 @@ function setupTTS(){
     console.log(e);
   })
   .on('end', () => {
-    console.log('on end');
+    console.log('recognizeStream: on end');
   });
 
   audio.pipe(recognizeStream);
   audio.on('end', function() {
-      //fileWriter.end();
+    console.log('audio: on end');
+    //fileWriter.end();
   });
 };
 
