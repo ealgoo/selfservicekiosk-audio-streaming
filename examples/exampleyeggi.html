@@ -65,9 +65,9 @@
     </div>
 
     <script>
-        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
-        var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
-        var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+        var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
+        var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
         const startRecording = document.getElementById('start-recording');
         const stopRecording = document.getElementById('stop-recording');
         let recordAudio;
@@ -181,7 +181,7 @@
                 correct: 0
             }
         ];
-        var grammar = '#JSGF V1.0; grammar word; public <word> = ' + words.map(function (item) { return item["id"]; }).join(' | ') + ' ;'
+        var grammar = '#JSGF V1.0; grammar word; public <word> = ' + words.map(function (item) { return item["id"]; }).join(' | ') + ' ;';
         var recognition = new SpeechRecognition();
         var speechRecognitionList = new SpeechGrammarList();
         speechRecognitionList.addFromString(grammar, 1);
@@ -256,152 +256,99 @@
         }
 
         function myFunction() {
-            //recognition.start();
-            navigator.getUserMedia({
-                audio: true
-            }, function (stream) {
-
-                //5)
-                recordAudio = RecordRTC(stream, {
-                    type: 'audio',
-
-                    //6)
-                    mimeType: 'audio/webm',
-                    sampleRate: 44100,
-                    // used by StereoAudioRecorder
-                    // the range 22050 to 96000.
-                    // let us force 16khz recording:
-                    desiredSampRate: 16000,
-                    // this should match with Syour server code
-
-                    // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
-                    // CanvasRecorder, GifRecorder, WhammyRecorder
-                    recorderType: StereoAudioRecorder,
-                    // Dialogflow / STT requires mono audio
-                    numberOfAudioChannels: 1
-                });
-                recordAudio.startRecording();
-                stopRecording.disabled = false;
-            }, function (error) {
-                console.error(JSON.stringify(error));
-            });
-            console.log('Ready to receive word.');
         }
 
-        stopRecording.onclick = function () {
-            // recording stopped
-            startRecording.disabled = false;
-            stopRecording.disabled = true;
-
-            // stop audio recorder
-            recordAudio.stopRecording(function () {
-                // after stopping the audio, get the audio data
-                recordAudio.getDataURL(function (audioDataURL) {
-
-                    //8)
-                    var files = {
-                        audio: {
-                            type: recordAudio.getBlob().type || 'audio/wav',
-                            dataURL: audioDataURL
-                        }
-                    };
-                    // submit the audio file to the server
-                    socketio.emit('message', files);
-                });
-            });
-
-
-            function reset() {
-                for (var i = 0; i < words.length; i++) {
-                    words[i].incorrect = 0;
-                    words[i].correct = 0;
-                }
-                count = 0;
-                correct_word = words[count].id;
-                diagnostic.textContent = correct_word;
-                finished_modal.style.display = "none";
+        function reset() {
+            for (var i = 0; i < words.length; i++) {
+                words[i].incorrect = 0;
+                words[i].correct = 0;
             }
-            recognition.onresult = function (event) {
-                // The SpeechRecognitionEvent results property returns a SpeechRecognitionResultList object
-                // The SpeechRecognitionResultList object contains SpeechRecognitionResult objects.
-                // It has a getter so it can be accessed like an array
-                // The first [0] returns the SpeechRecognitionResult at the last position.
-                // Each SpeechRecognitionResult object contains SpeechRecognitionAlternative objects that contain individual results.
-                // These also have getters so they can be accessed like arrays.
-                // The second [0] returns the SpeechRecognitionAlternative at position 0.
-                // We then return the transcript property of the SpeechRecognitionAlternative object
-                var word = event.results[0][0].transcript;
-                diagnostic.textContent = 'Result received: ' + word;
-                console.log('Confidence: ' + event.results[0][0].confidence);
-                if (word === correct_word) {
-                    bg.style.backgroundColor = "green";
-                    words[count].correct++;
-                    if (words[count].correct > words[count].incorrect) words[count].status = "mastered";
-                    diagnostic.textContent = correct_word;
+            count = 0;
+            correct_word = words[count].id;
+            diagnostic.textContent = correct_word;
+            finished_modal.style.display = "none";
+        }
+        recognition.onresult = function (event) {
+            // The SpeechRecognitionEvent results property returns a SpeechRecognitionResultList object
+            // The SpeechRecognitionResultList object contains SpeechRecognitionResult objects.
+            // It has a getter so it can be accessed like an array
+            // The first [0] returns the SpeechRecognitionResult at the last position.
+            // Each SpeechRecognitionResult object contains SpeechRecognitionAlternative objects that contain individual results.
+            // These also have getters so they can be accessed like arrays.
+            // The second [0] returns the SpeechRecognitionAlternative at position 0.
+            // We then return the transcript property of the SpeechRecognitionAlternative object
+            var word = event.results[0][0].transcript;
+            diagnostic.textContent = 'Result received: ' + word;
+            console.log('Confidence: ' + event.results[0][0].confidence);
+            if (word === correct_word) {
+                bg.style.backgroundColor = "green";
+                words[count].correct++;
+                if (words[count].correct > words[count].incorrect) words[count].status = "mastered";
+                diagnostic.textContent = correct_word;
+                getNextWord();
+                wrong_count = 0;
+            }
+            else {
+                words[count].status = "learning";
+                bg.style.backgroundColor = "red";
+                words[count].incorrect++;
+                wrong_count++;
+                if (wrong_count == 3) {
+                    bg.style.backgroundColor = "white";
                     getNextWord();
-                    wrong_count = 0;
                 }
-                else {
-                    words[count].status = "learning";
-                    bg.style.backgroundColor = "red";
-                    words[count].incorrect++;
-                    wrong_count++;
-                    if (wrong_count == 3) {
-                        bg.style.backgroundColor = "white";
-                        getNextWord();
-                    }
-                    diagnostic.textContent += "\nWord: " + correct_word;
-                }
+                diagnostic.textContent += "\nWord: " + correct_word;
             }
+        }
 
-            function getNextWord() {
-                var all_mastered = false;
+        function getNextWord() {
+            var all_mastered = false;
+            count++;
+            let prev_count = count;
+            if (count == words.length) count = 0;
+            while (words[count].correct > words[count].incorrect) {
                 count++;
-                let prev_count = count;
                 if (count == words.length) count = 0;
-                while (words[count].correct > words[count].incorrect) {
-                    count++;
-                    if (count == words.length) count = 0;
-                    if (count == prev_count) {
-                        all_mastered = true;
-                        break;
-                    }
+                if (count == prev_count) {
+                    all_mastered = true;
+                    break;
                 }
-                if (all_mastered) {
-                    finished_modal.style.display = "block";
-                }
-                else {
-                    correct_word = words[count].id;
-                }
-                diagnostic.textContent = correct_word;
             }
+            if (all_mastered) {
+                finished_modal.style.display = "block";
+            }
+            else {
+                correct_word = words[count].id;
+            }
+            diagnostic.textContent = correct_word;
+        }
 
-            // When the user clicks on <span> (x), close the modal
-            span.onclick = function () {
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            finished_modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == finished_modal) {
                 finished_modal.style.display = "none";
             }
+        }
+        recognition.onspeechend = function () {
+            recognition.stop();
+        }
 
-            // When the user clicks anywhere outside of the modal, close it
-            window.onclick = function (event) {
-                if (event.target == finished_modal) {
-                    finished_modal.style.display = "none";
-                }
-            }
-            recognition.onspeechend = function () {
-                recognition.stop();
-            }
+        recognition.onnomatch = function (event) {
+            diagnostic.textContent = "I didn't recognise that word.";
+        }
 
-            recognition.onnomatch = function (event) {
-                diagnostic.textContent = "I didn't recognise that word.";
-            }
+        recognition.onerror = function (event) {
+            diagnostic.textContent = 'Error occurred in recognition: ' + event.error;
+        }
+        const recorder = document.getElementById('recorder');
+        const player = document.getElementById('player');
 
-            recognition.onerror = function (event) {
-                diagnostic.textContent = 'Error occurred in recognition: ' + event.error;
-            }
-            const recorder = document.getElementById('recorder');
-            const player = document.getElementById('player');
-
-            recorder.addEventListener('change', function (e) {
+        recorder.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 const url = URL.createObjectURL(file);
                 // Do something with the audio file.
