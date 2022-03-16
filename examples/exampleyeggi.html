@@ -53,12 +53,104 @@
     </div>
     <input type="file" accept="audio/*" capture id="recorder">
     <audio id="player" controls></audio>
+    <button id="start-recording" disabled>Start Recording</button>
+    <button id="stop-recording" disabled>Stop Recording</button>
+    <h2 style="font-size: 16px; margin-bottom: 10px;">Query Text</h2>
+    <code>data[0].queryResult.queryText</code><br/>
+    <input id="queryText" type="text" style="width: 400px;"/>
+    <h2 style="font-size: 16px; margin-bottom: 10px;">Intent</h2>
+    <code>data[0].queryResult.intent.displayName</code><br/>
+    <input id="intent" type="text" style="width: 400px;"/>
+    <h2 style="font-size: 16px;">Responses</h2>
+    <code>data[0].queryResult.fulfillmentText</code><br/>
+    <textarea id="results" style="width: 800px; height: 300px;"></textarea>
+  </div>
 
-    <script>
-        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
-        var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
-        var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
+  <script>
+    var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
+    var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
+    var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
+    const startRecording = document.getElementById('start-recording');
+    const stopRecording = document.getElementById('stop-recording');
+    let recordAudio;
+    const socketio = io();
+    const socket = socketio.on('connect', function() {
+        startRecording.disabled = false;
+    });
 
+    //3)
+    startRecording.onclick = function() {
+        startRecording.disabled = true;
+
+        //4)
+        // make use of WebRTC JavaScript method getUserMedia()
+        // to capture the browser microphone stream
+        navigator.getUserMedia({
+            audio: true
+        }, function(stream) {
+
+                //5)
+                recordAudio = RecordRTC(stream, {
+                    type: 'audio',
+
+                //6)
+                    mimeType: 'audio/webm',
+                    sampleRate: 44100,
+                    // used by StereoAudioRecorder
+                    // the range 22050 to 96000.
+                    // let us force 16khz recording:
+                    desiredSampRate: 16000, 
+                    // this should match with Syour server code
+
+                    // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
+                    // CanvasRecorder, GifRecorder, WhammyRecorder
+                    recorderType: StereoAudioRecorder,
+                    // Dialogflow / STT requires mono audio
+                    numberOfAudioChannels: 1
+            });
+
+            recordAudio.startRecording();
+            stopRecording.disabled = false;
+        }, function(error) {
+            console.error(JSON.stringify(error));
+        });
+    };
+
+    //7)
+    stopRecording.onclick = function() {
+        // recording stopped
+        startRecording.disabled = false;
+        stopRecording.disabled = true;
+
+        // stop audio recorder
+        recordAudio.stopRecording(function() {
+            // after stopping the audio, get the audio data
+            recordAudio.getDataURL(function(audioDataURL) {
+
+                //8)
+                var files = {
+                    audio: {
+                        type: recordAudio.getBlob().type || 'audio/wav',
+                        dataURL: audioDataURL
+                    }
+                };
+                // submit the audio file to the server
+                socketio.emit('message', files);
+            });
+        });
+    };
+    const resultpreview = document.getElementById('results');
+    const intentInput = document.getElementById('intent');
+    const textInput = document.getElementById('queryText');
+    socketio.on('results', function (data) {
+        console.log(data);
+        // show the results on the screen
+        if(data[0].queryResult){
+            resultpreview.innerHTML += "" + data[0].queryResult.fulfillmentText;
+            intentInput.value = data[0].queryResult.intent.displayName;
+            textInput.value = "" + data[0].queryResult.queryText;
+        }
+    });
         let words = [
         {
             id: "hello",
@@ -166,9 +258,60 @@
         }
 
         function myFunction() {
-        recognition.start();
+        //recognition.start();
+          navigator.getUserMedia({
+              audio: true
+          }, function(stream) {
+
+                  //5)
+                  recordAudio = RecordRTC(stream, {
+                      type: 'audio',
+
+                  //6)
+                      mimeType: 'audio/webm',
+                      sampleRate: 44100,
+                      // used by StereoAudioRecorder
+                      // the range 22050 to 96000.
+                      // let us force 16khz recording:
+                      desiredSampRate: 16000, 
+                      // this should match with Syour server code
+
+                      // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
+                      // CanvasRecorder, GifRecorder, WhammyRecorder
+                      recorderType: StereoAudioRecorder,
+                      // Dialogflow / STT requires mono audio
+                      numberOfAudioChannels: 1
+              });
+              recordAudio.startRecording();
+              stopRecording.disabled = false;
+          }, function(error) {
+              console.error(JSON.stringify(error));
+          });
         console.log('Ready to receive word.');
         }
+
+        stopRecording.onclick = function() {
+        // recording stopped
+        startRecording.disabled = false;
+        stopRecording.disabled = true;
+
+        // stop audio recorder
+        recordAudio.stopRecording(function() {
+            // after stopping the audio, get the audio data
+            recordAudio.getDataURL(function(audioDataURL) {
+
+                //8)
+                var files = {
+                    audio: {
+                        type: recordAudio.getBlob().type || 'audio/wav',
+                        dataURL: audioDataURL
+                    }
+                };
+                // submit the audio file to the server
+                socketio.emit('message', files);
+            });
+        });
+    
 
         function reset(){
         for(var i=0; i<words.length; i++){
