@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Speech Therapy WebApp</title>
@@ -13,90 +14,90 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io-stream/0.9.1/socket.io-stream.js"></script>
 </head>
 
-  <body>
+<body>
     <h1>Speech Therapy WebApp </h1>
-    <button class = "button" onclick="pronounce();"> Pronounce Word </button>
-    <mic class = "center" onclick="myFunction();"> 
-      <img src=
-      "https://www.pngitem.com/pimgs/m/561-5619978_recording-symbol-png-free-radio-microphone-icon-transparent.png" 
-      height ="250" width="240" 
-      style="border-radius: 50%; border: 3px solid green;"/> </mic>
- 
-    <button class = "button" onclick="skip()";> skip </button>
+    <button class="button" onclick="pronounce();"> Pronounce Word </button>
+    <mic class="center" onclick="myFunction();">
+        <img src="https://www.pngitem.com/pimgs/m/561-5619978_recording-symbol-png-free-radio-microphone-icon-transparent.png"
+            height="250" width="240" style="border-radius: 50%; border: 3px solid green;" />
+    </mic>
+
+    <button class="button" onclick="skip()" ;> skip </button>
     <div>
         <p class="output" style="font-family: OCR A Std, monospace;font-size:30px; "><em></em></p>
     </div>
     <!-- The Modal -->
     <div id="finished_modal" class="modal">
-      <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>You have mastered all of the words!</p>
-        <sbutton onclick="location.href='home.html'" type="button">
-          Return to Home</sbutton>
-        <sbutton onclick="reset();"> Play again!</sbutton>
-      </div>
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>You have mastered all of the words!</p>
+            <sbutton onclick="location.href='home.html'" type="button">
+                Return to Home</sbutton>
+            <sbutton onclick="reset();"> Play again!</sbutton>
+        </div>
     </div>
-    <span style="font-size:30px;cursor:pointer; left:10px; top:10px; position:absolute"  onclick="openNav()">&#9776; status</span>
+    <span style="font-size:30px;cursor:pointer; left:10px; top:10px; position:absolute" onclick="openNav()">&#9776;
+        status</span>
     <div id="mySidenav" class="sidenav">
-      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-      <h1>Status</h1>
-      <h3>New</h3>
-      <ul id = "new" style="color:gray"></ul>
-      <h3>Learning</h3>
-      <ul id = "learning" style="color:gray"></ul>
-      <h3>Mastered</h3>
-      <ul id = "mastered" style="color:gray"></ul>
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <h1>Status</h1>
+        <h3>New</h3>
+        <ul id="new" style="color:gray"></ul>
+        <h3>Learning</h3>
+        <ul id="learning" style="color:gray"></ul>
+        <h3>Mastered</h3>
+        <ul id="mastered" style="color:gray"></ul>
     </div>
     <input type="file" accept="audio/*" capture id="recorder">
     <audio id="player" controls></audio>
     <button id="start-recording" disabled>Start Recording</button>
     <button id="stop-recording" disabled>Stop Recording</button>
     <h2 style="font-size: 16px; margin-bottom: 10px;">Query Text</h2>
-    <code>data[0].queryResult.queryText</code><br/>
-    <input id="queryText" type="text" style="width: 400px;"/>
+    <code>data[0].queryResult.queryText</code><br />
+    <input id="queryText" type="text" style="width: 400px;" />
     <h2 style="font-size: 16px; margin-bottom: 10px;">Intent</h2>
-    <code>data[0].queryResult.intent.displayName</code><br/>
-    <input id="intent" type="text" style="width: 400px;"/>
+    <code>data[0].queryResult.intent.displayName</code><br />
+    <input id="intent" type="text" style="width: 400px;" />
     <h2 style="font-size: 16px;">Responses</h2>
-    <code>data[0].queryResult.fulfillmentText</code><br/>
+    <code>data[0].queryResult.fulfillmentText</code><br />
     <textarea id="results" style="width: 800px; height: 300px;"></textarea>
-  </div>
+    </div>
 
-  <script>
-    var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
-    var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
-    var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
-    const startRecording = document.getElementById('start-recording');
-    const stopRecording = document.getElementById('stop-recording');
-    let recordAudio;
-    const socketio = io();
-    const socket = socketio.on('connect', function() {
-        startRecording.disabled = false;
-    });
+    <script>
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
+        var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
+        var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
+        const startRecording = document.getElementById('start-recording');
+        const stopRecording = document.getElementById('stop-recording');
+        let recordAudio;
+        const socketio = io();
+        const socket = socketio.on('connect', function () {
+            startRecording.disabled = false;
+        });
 
-    //3)
-    startRecording.onclick = function() {
-        startRecording.disabled = true;
+        //3)
+        startRecording.onclick = function () {
+            startRecording.disabled = true;
 
-        //4)
-        // make use of WebRTC JavaScript method getUserMedia()
-        // to capture the browser microphone stream
-        navigator.getUserMedia({
-            audio: true
-        }, function(stream) {
+            //4)
+            // make use of WebRTC JavaScript method getUserMedia()
+            // to capture the browser microphone stream
+            navigator.getUserMedia({
+                audio: true
+            }, function (stream) {
 
                 //5)
                 recordAudio = RecordRTC(stream, {
                     type: 'audio',
 
-                //6)
+                    //6)
                     mimeType: 'audio/webm',
                     sampleRate: 44100,
                     // used by StereoAudioRecorder
                     // the range 22050 to 96000.
                     // let us force 16khz recording:
-                    desiredSampRate: 16000, 
+                    desiredSampRate: 16000,
                     // this should match with Syour server code
 
                     // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
@@ -104,81 +105,81 @@
                     recorderType: StereoAudioRecorder,
                     // Dialogflow / STT requires mono audio
                     numberOfAudioChannels: 1
+                });
+
+                recordAudio.startRecording();
+                stopRecording.disabled = false;
+            }, function (error) {
+                console.error(JSON.stringify(error));
             });
+        };
 
-            recordAudio.startRecording();
-            stopRecording.disabled = false;
-        }, function(error) {
-            console.error(JSON.stringify(error));
-        });
-    };
+        //7)
+        stopRecording.onclick = function () {
+            // recording stopped
+            startRecording.disabled = false;
+            stopRecording.disabled = true;
 
-    //7)
-    stopRecording.onclick = function() {
-        // recording stopped
-        startRecording.disabled = false;
-        stopRecording.disabled = true;
+            // stop audio recorder
+            recordAudio.stopRecording(function () {
+                // after stopping the audio, get the audio data
+                recordAudio.getDataURL(function (audioDataURL) {
 
-        // stop audio recorder
-        recordAudio.stopRecording(function() {
-            // after stopping the audio, get the audio data
-            recordAudio.getDataURL(function(audioDataURL) {
-
-                //8)
-                var files = {
-                    audio: {
-                        type: recordAudio.getBlob().type || 'audio/wav',
-                        dataURL: audioDataURL
-                    }
-                };
-                // submit the audio file to the server
-                socketio.emit('message', files);
+                    //8)
+                    var files = {
+                        audio: {
+                            type: recordAudio.getBlob().type || 'audio/wav',
+                            dataURL: audioDataURL
+                        }
+                    };
+                    // submit the audio file to the server
+                    socketio.emit('message', files);
+                });
             });
+        };
+        const resultpreview = document.getElementById('results');
+        const intentInput = document.getElementById('intent');
+        const textInput = document.getElementById('queryText');
+        socketio.on('results', function (data) {
+            console.log(data);
+            // show the results on the screen
+            if (data[0].queryResult) {
+                resultpreview.innerHTML += "" + data[0].queryResult.fulfillmentText;
+                intentInput.value = data[0].queryResult.intent.displayName;
+                textInput.value = "" + data[0].queryResult.queryText;
+            }
         });
-    };
-    const resultpreview = document.getElementById('results');
-    const intentInput = document.getElementById('intent');
-    const textInput = document.getElementById('queryText');
-    socketio.on('results', function (data) {
-        console.log(data);
-        // show the results on the screen
-        if(data[0].queryResult){
-            resultpreview.innerHTML += "" + data[0].queryResult.fulfillmentText;
-            intentInput.value = data[0].queryResult.intent.displayName;
-            textInput.value = "" + data[0].queryResult.queryText;
-        }
-    });
         let words = [
-        {
-            id: "hello",
-            status: "new",
-            incorrect: 0,
-            correct: 0
-        },
-        {
-            id: "smart",
-            status: "new",
-            incorrect: 0,
-            correct: 0
-        }
-        ,{
-            id: "happy",
-            status: "new",
-            incorrect: 0,
-            correct: 0
-        },
-        {
-            id: "tangerine",
-            status: "new",
-            incorrect: 0,
-            correct: 0
-        },
-        {
-            id: "playful",
-            status: "new",
-            incorrect: 0,
-            correct: 0
-        }
+            {
+                id: "hello",
+                status: "new",
+                incorrect: 0,
+                correct: 0
+            },
+            {
+                id: "smart",
+                status: "new",
+                incorrect: 0,
+                correct: 0
+            }
+            , {
+                id: "happy",
+                status: "new",
+                incorrect: 0,
+                correct: 0
+            },
+            {
+                id: "tangerine",
+                status: "new",
+                incorrect: 0,
+                correct: 0
+            },
+            {
+                id: "playful",
+                status: "new",
+                incorrect: 0,
+                correct: 0
+            }
         ];
         var grammar = '#JSGF V1.0; grammar word; public <word> = ' + words.map(function (item) { return item["id"]; }).join(' | ') + ' ;'
         var recognition = new SpeechRecognition();
@@ -204,208 +205,209 @@
         var span = document.getElementsByClassName("close")[0];
 
         function openNav() {
-        document.getElementById("mySidenav").style.width = "250px";
-        makeStatusList();
-        document.getElementById('new').appendChild(makeStatusList(0));
-        document.getElementById('learning').appendChild(makeStatusList(1));
-        document.getElementById('mastered').appendChild(makeStatusList(2));
+            document.getElementById("mySidenav").style.width = "250px";
+            makeStatusList();
+            document.getElementById('new').appendChild(makeStatusList(0));
+            document.getElementById('learning').appendChild(makeStatusList(1));
+            document.getElementById('mastered').appendChild(makeStatusList(2));
         }
 
         function makeStatusList(type) {
 
-        var new_list = document.createElement('ul');
-        var learning_list = document.createElement('ul');
-        var mastered_list = document.createElement('ul');
+            var new_list = document.createElement('ul');
+            var learning_list = document.createElement('ul');
+            var mastered_list = document.createElement('ul');
 
-        for (var i = 0; i < words.length; i++) {
-            // Create the list item:
-            var item = document.createElement('li');
+            for (var i = 0; i < words.length; i++) {
+                // Create the list item:
+                var item = document.createElement('li');
 
-            // Set its contents:
-            item.appendChild(document.createTextNode(words[i].id));
+                // Set its contents:
+                item.appendChild(document.createTextNode(words[i].id));
 
-            // Add it to the list:
-            if(words[i].status == 'new') new_list.appendChild(item);
-            else if(words[i].status == 'learning')learning_list.appendChild(item);
-            else mastered_list.appendChild(item);
-        }
+                // Add it to the list:
+                if (words[i].status == 'new') new_list.appendChild(item);
+                else if (words[i].status == 'learning') learning_list.appendChild(item);
+                else mastered_list.appendChild(item);
+            }
 
-        if(type == 0) return new_list;
-        if(type == 1) return learning_list;
-        if(type == 2) return mastered_list;
+            if (type == 0) return new_list;
+            if (type == 1) return learning_list;
+            if (type == 2) return mastered_list;
 
         }
 
         function closeNav() {
-        document.getElementById("mySidenav").style.width = "0";
-        document.getElementById('new').removeChild(document.getElementById('new').firstElementChild);
-        document.getElementById('learning').removeChild(document.getElementById('learning').firstElementChild);
-        document.getElementById('mastered').removeChild(document.getElementById('mastered').firstElementChild);
+            document.getElementById("mySidenav").style.width = "0";
+            document.getElementById('new').removeChild(document.getElementById('new').firstElementChild);
+            document.getElementById('learning').removeChild(document.getElementById('learning').firstElementChild);
+            document.getElementById('mastered').removeChild(document.getElementById('mastered').firstElementChild);
 
         }
 
         window.onload = function () {
-        getNextWord();
+            getNextWord();
         };
 
         function pronounce() {
-        var msg = new SpeechSynthesisUtterance();
-        msg.text = correct_word;
-        window.speechSynthesis.speak(msg);
+            var msg = new SpeechSynthesisUtterance();
+            msg.text = correct_word;
+            window.speechSynthesis.speak(msg);
         }
 
         function myFunction() {
-        //recognition.start();
-          navigator.getUserMedia({
-              audio: true
-          }, function(stream) {
+            //recognition.start();
+            navigator.getUserMedia({
+                audio: true
+            }, function (stream) {
 
-                  //5)
-                  recordAudio = RecordRTC(stream, {
-                      type: 'audio',
+                //5)
+                recordAudio = RecordRTC(stream, {
+                    type: 'audio',
 
-                  //6)
-                      mimeType: 'audio/webm',
-                      sampleRate: 44100,
-                      // used by StereoAudioRecorder
-                      // the range 22050 to 96000.
-                      // let us force 16khz recording:
-                      desiredSampRate: 16000, 
-                      // this should match with Syour server code
+                    //6)
+                    mimeType: 'audio/webm',
+                    sampleRate: 44100,
+                    // used by StereoAudioRecorder
+                    // the range 22050 to 96000.
+                    // let us force 16khz recording:
+                    desiredSampRate: 16000,
+                    // this should match with Syour server code
 
-                      // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
-                      // CanvasRecorder, GifRecorder, WhammyRecorder
-                      recorderType: StereoAudioRecorder,
-                      // Dialogflow / STT requires mono audio
-                      numberOfAudioChannels: 1
-              });
-              recordAudio.startRecording();
-              stopRecording.disabled = false;
-          }, function(error) {
-              console.error(JSON.stringify(error));
-          });
-        console.log('Ready to receive word.');
-        }
-
-        stopRecording.onclick = function() {
-        // recording stopped
-        startRecording.disabled = false;
-        stopRecording.disabled = true;
-
-        // stop audio recorder
-        recordAudio.stopRecording(function() {
-            // after stopping the audio, get the audio data
-            recordAudio.getDataURL(function(audioDataURL) {
-
-                //8)
-                var files = {
-                    audio: {
-                        type: recordAudio.getBlob().type || 'audio/wav',
-                        dataURL: audioDataURL
-                    }
-                };
-                // submit the audio file to the server
-                socketio.emit('message', files);
+                    // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
+                    // CanvasRecorder, GifRecorder, WhammyRecorder
+                    recorderType: StereoAudioRecorder,
+                    // Dialogflow / STT requires mono audio
+                    numberOfAudioChannels: 1
+                });
+                recordAudio.startRecording();
+                stopRecording.disabled = false;
+            }, function (error) {
+                console.error(JSON.stringify(error));
             });
-        });
-    
+            console.log('Ready to receive word.');
+        }
 
-        function reset(){
-        for(var i=0; i<words.length; i++){
-            words[i].incorrect = 0;
-            words[i].correct = 0;
-        }
-        count = 0;
-        correct_word = words[count].id;
-        diagnostic.textContent = correct_word;
-        finished_modal.style.display = "none";
-        }
-        recognition.onresult = function (event) {
-        // The SpeechRecognitionEvent results property returns a SpeechRecognitionResultList object
-        // The SpeechRecognitionResultList object contains SpeechRecognitionResult objects.
-        // It has a getter so it can be accessed like an array
-        // The first [0] returns the SpeechRecognitionResult at the last position.
-        // Each SpeechRecognitionResult object contains SpeechRecognitionAlternative objects that contain individual results.
-        // These also have getters so they can be accessed like arrays.
-        // The second [0] returns the SpeechRecognitionAlternative at position 0.
-        // We then return the transcript property of the SpeechRecognitionAlternative object
-        var word = event.results[0][0].transcript;
-        diagnostic.textContent = 'Result received: ' + word;
-        console.log('Confidence: ' + event.results[0][0].confidence);
-        if (word === correct_word) {
-            bg.style.backgroundColor = "green";
-            words[count].correct++;
-            if (words[count].correct > words[count].incorrect) words[count].status = "mastered";
-            diagnostic.textContent = correct_word;
-            getNextWord();
-            wrong_count = 0;
-        }
-        else {
-            words[count].status = "learning";
-            bg.style.backgroundColor = "red";
-            words[count].incorrect++;
-            wrong_count++;
-            if(wrong_count == 3) {
-            bg.style.backgroundColor = "white";
-            getNextWord();
+        stopRecording.onclick = function () {
+            // recording stopped
+            startRecording.disabled = false;
+            stopRecording.disabled = true;
+
+            // stop audio recorder
+            recordAudio.stopRecording(function () {
+                // after stopping the audio, get the audio data
+                recordAudio.getDataURL(function (audioDataURL) {
+
+                    //8)
+                    var files = {
+                        audio: {
+                            type: recordAudio.getBlob().type || 'audio/wav',
+                            dataURL: audioDataURL
+                        }
+                    };
+                    // submit the audio file to the server
+                    socketio.emit('message', files);
+                });
+            });
+
+
+            function reset() {
+                for (var i = 0; i < words.length; i++) {
+                    words[i].incorrect = 0;
+                    words[i].correct = 0;
+                }
+                count = 0;
+                correct_word = words[count].id;
+                diagnostic.textContent = correct_word;
+                finished_modal.style.display = "none";
             }
-            diagnostic.textContent += "\nWord: " + correct_word;
-        }
-        }
-
-        function getNextWord() {
-        var all_mastered = false;
-        count++;
-        let prev_count = count;
-        if (count == words.length) count = 0;
-        while (words[count].correct > words[count].incorrect) {
-            count++;
-            if (count == words.length) count = 0;
-            if (count == prev_count) {
-            all_mastered = true;
-            break;
+            recognition.onresult = function (event) {
+                // The SpeechRecognitionEvent results property returns a SpeechRecognitionResultList object
+                // The SpeechRecognitionResultList object contains SpeechRecognitionResult objects.
+                // It has a getter so it can be accessed like an array
+                // The first [0] returns the SpeechRecognitionResult at the last position.
+                // Each SpeechRecognitionResult object contains SpeechRecognitionAlternative objects that contain individual results.
+                // These also have getters so they can be accessed like arrays.
+                // The second [0] returns the SpeechRecognitionAlternative at position 0.
+                // We then return the transcript property of the SpeechRecognitionAlternative object
+                var word = event.results[0][0].transcript;
+                diagnostic.textContent = 'Result received: ' + word;
+                console.log('Confidence: ' + event.results[0][0].confidence);
+                if (word === correct_word) {
+                    bg.style.backgroundColor = "green";
+                    words[count].correct++;
+                    if (words[count].correct > words[count].incorrect) words[count].status = "mastered";
+                    diagnostic.textContent = correct_word;
+                    getNextWord();
+                    wrong_count = 0;
+                }
+                else {
+                    words[count].status = "learning";
+                    bg.style.backgroundColor = "red";
+                    words[count].incorrect++;
+                    wrong_count++;
+                    if (wrong_count == 3) {
+                        bg.style.backgroundColor = "white";
+                        getNextWord();
+                    }
+                    diagnostic.textContent += "\nWord: " + correct_word;
+                }
             }
-        }
-        if(all_mastered){
-            finished_modal.style.display = "block";
-        }
-        else{
-            correct_word = words[count].id;
-        }
-        diagnostic.textContent = correct_word;
-        }
 
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-        finished_modal.style.display = "none";
-        }
+            function getNextWord() {
+                var all_mastered = false;
+                count++;
+                let prev_count = count;
+                if (count == words.length) count = 0;
+                while (words[count].correct > words[count].incorrect) {
+                    count++;
+                    if (count == words.length) count = 0;
+                    if (count == prev_count) {
+                        all_mastered = true;
+                        break;
+                    }
+                }
+                if (all_mastered) {
+                    finished_modal.style.display = "block";
+                }
+                else {
+                    correct_word = words[count].id;
+                }
+                diagnostic.textContent = correct_word;
+            }
 
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-        if (event.target == finished_modal) {
-            finished_modal.style.display = "none";
-        }
-        }
-        recognition.onspeechend = function () {
-        recognition.stop();
-        }
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function () {
+                finished_modal.style.display = "none";
+            }
 
-        recognition.onnomatch = function (event) {
-        diagnostic.textContent = "I didn't recognise that word.";
-        }
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function (event) {
+                if (event.target == finished_modal) {
+                    finished_modal.style.display = "none";
+                }
+            }
+            recognition.onspeechend = function () {
+                recognition.stop();
+            }
 
-        recognition.onerror = function (event) {
-        diagnostic.textContent = 'Error occurred in recognition: ' + event.error;
-        }
-        const recorder = document.getElementById('recorder');
-        const player = document.getElementById('player');
+            recognition.onnomatch = function (event) {
+                diagnostic.textContent = "I didn't recognise that word.";
+            }
 
-        recorder.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const url = URL.createObjectURL(file);
-        // Do something with the audio file.
-        player.src = url;
-        });
+            recognition.onerror = function (event) {
+                diagnostic.textContent = 'Error occurred in recognition: ' + event.error;
+            }
+            const recorder = document.getElementById('recorder');
+            const player = document.getElementById('player');
+
+            recorder.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                const url = URL.createObjectURL(file);
+                // Do something with the audio file.
+                player.src = url;
+            });
     </script>
-  </body>
+</body>
+
 </html>
