@@ -38,6 +38,10 @@ if(example == 7){
   encoding = 'linear16';
 }
 
+if(example == "yeggi"){
+  encoding = 'LINEAR16';
+}
+
 const singleUtterance = true;
 const interimResults = false;
 const sampleRateHertz = 16000;
