@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "yeggi-344007",
+  "private_key_id": "4cb495273439b5d81d018e766666a672730bb011",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCsylYqXjeb8ANU\nU7pX9SwW7fXMHtVfFmPuFm5wqHDPFRtp38pzYZv5GFLUELNW2MEsIgReeHd+n9xE\nGMkmomBMSW4Sz2dtEtXhL5JV3+Idd2X16FYQaLiI4pyDFTn40Y9cpa5EqSRG020x\nCzS9Q5wU+W7MeCxVz1XJrRYHbqUDMlBGEkPjxR1RaNeDptH0NGKuifWEjHD0LdLZ\nsAAcIUmCinlBCUnGuxesqaKG29zwdvOcWvWhZkwBnaQ5dtZBEFpz+aWsG7a31kn2\nEFIIwm5Ycog2nH1kdRJ7Wb3RetXEQo8ckNKbtHNsCidBsZL3hKxEuF+3zvatn6mT\nMn5+8Ml/AgMBAAECggEASx9pGOB/ktdlyyrf0E/yjEGG5Oje4YlthtzPxUEmUpId\nqgk3DrT4R/MwR6y/G9n/Gj3r4lrDsRS1ghG4mohsD565MYpksAJJZK73E0jUGPWJ\nKcGKcXXmDPVhEIiQ/MG3b5NE0esrr3NKfNEfa83SNThA2LrCo8gRxy3uburG6T0l\nvyK9S3JY445JU2ovn7e7ccoEwTd2O1KQL66BV3U2+CgK6kWZ6Q+XdVSBaUmA2+LW\nMmNHaD+4cnG/iTksIWO4CjSv3Cfhx3QQ96kolHfwuClP4FBsMNVPU6JOmqUHhNdo\nNVtGeTdI9PiduurAcGw49vtabLMujEeuwosc2AsKgQKBgQDqX7J/fcQ2jntLneYE\nDrZuugoMKjeGzO1p8zgKcnQpEzU9kFz/en185uAAGnPIVvMzNN0Yu0cxN9TK4xwJ\nPwfeLwqdxqPvEHJLHloV8OcmPDVytavb3ZXFVHI/uyhMYTnYAaqcjoayhX3SbPKN\nMK1nxu7N5EdDdESvJXGeWxfdwQKBgQC8u+9mr86HxsWTJEy9dJQbkFNTItvC7aA1\nanum8IPtnUMurXFgS5klB4B06wKdiArO6+T0aoAYyH0wdjwiCvA0e4SbXz1FuUDl\nyW8gwZcT0ZNmOal1e1KOISqWfW8Gi1udxTwyJdEccWjz0+ybiBFuRvXJ2qrdJG/g\nTutQzBz3PwKBgQDKj1TVDRxEzpXO/7OpNBIF1rISW3ZMAdb65+M6XDr6uQgdoiRO\nBU5pYZydWj9RGZztV7XyxwE7j3ZQt0Im15v0MhHp1KEgX8V4GM5hAii0ifrjnhHf\nXz4vItHvNNEaWjlE8APFdQUDS444DEMBNd3YwDzqI25X5Sfre+Abrb0NwQKBgDYL\nnzeJmpvY+NT07SDHlG38O1AwSDwereT99CDO+Qh/IzDnq/LGUzl+V3OjpKEVxvqQ\nJIU1Ri9Soj7RbNDWzwhIYqXXdQVVUlc7Ap6fsTKUrh/03SjuQqq+pqJnkvaNy5N3\nWpCFscbyVvqTskqrgUpR+apu+sTO3VafYtVFTfojAoGAJeKqVH+BYWygFRuehWI+\nnXnmKoqeDVNY+9sX2bQq67vjxoagqN/P6n3Gfzrk5jc7UjmICAmYh2lhuqaLpsxx\nzSDd9rZoN1HGp94GJEOnt0TrRAMYJCGqdLDQ1SXODV4LUgcmo91yTWEdsCJTk8Au\n7ZOUHcyRtO+1EFDlQS0A7/s=\n-----END PRIVATE KEY-----\n",
+  "client_email": "selfservicedesk-app@yeggi-344007.iam.gserviceaccount.com",
+  "client_id": "107933430248106914571",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/selfservicedesk-app%40yeggi-344007.iam.gserviceaccount.com"
+}
