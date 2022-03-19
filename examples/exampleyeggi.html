@@ -168,6 +168,11 @@
             font-size: 20px;
             margin-right: 20px;
         }
+        .output {
+            font-family: OCR A Std, monospace;
+            font-size:30px; 
+            white-space: pre;
+        }
         @media screen and (max-height: 450px) {
           .sidenav {padding-top: 15px;}
           .sidenav a {font-size: 18px;}
@@ -180,15 +185,15 @@
 
 <body>
     <h1>Speech Therapy WebApp </h1>
-    <button class="button" onclick="pronounce();"> Pronounce Word </button>
+    <button class="button" onclick="pronounce();"> Play computer's pronunciation </button>
     <mic class="center" id="start-recording">
         <img src="https://www.pngitem.com/pimgs/m/561-5619978_recording-symbol-png-free-radio-microphone-icon-transparent.png"
-            height="250" width="240" style="border-radius: 50%; border: 3px solid green;" />
+            id = "mic_button" height="250" width="240" style="border-radius: 50%; border: 3px solid green;" />
     </mic>
-
+    <button class="button" onclick="playP()" ;> Play my pronunciation  </button>
     <button class="button" onclick="skip()" ;> skip </button>
     <div>
-        <p class="output" style="font-family: OCR A Std, monospace;font-size:30px; "><em></em></p>
+        <p class="output"><em></em></p>
     </div>
     <!-- The Modal -->
     <div id="finished_modal" class="modal">
@@ -199,6 +204,12 @@
             <button class="sbutton" onclick="location.href='home.html'" type="button">
                 Return to Home</button>
             <button class="sbutton" onclick="reset();"> Play again!</button>
+        </div>
+    </div>
+    <div id="not_available" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <p>You have not pronounced the word yet!</p>
         </div>
     </div>
     <span style="font-size:30px;cursor:pointer; left:10px; top:10px; position:absolute" onclick="openNav()">&#9776;
@@ -214,7 +225,7 @@
         <ul id="mastered" style="color:gray"></ul>
     </div>
     <!-- -recording" disabled>Stop Recording</button> -->
-    <textarea id="results"></textarea>
+   <!-- <textarea id="results"></textarea> -->
     </div>
 
     <script>
@@ -222,17 +233,43 @@
         var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
         var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
         const startRecording = document.getElementById('start-recording');
+        const micButton = document.getElementById('mic_button');
+        var recordingExists = false;
         //const stopRecording = document.getElementById('stop-recording');
         let recordAudio;
+        var blobUrl="";
         const socketio = io();
         const socket = socketio.on('connect', function () {
             startRecording.disabled = false;
         });
 
+        function playP(){
+            if(recordingExists){
+                var music = new Audio(blobUrl);
+                music.play();
+            }
+            else {
+                not_available.style.display = 'block';
+                setTimeout(() => {
+                    not_available.style.display = 'none';
+                    // 👇️ hides element (still takes up space on page)
+                    // box.style.visibility = 'hidden';
+                }, 3000);
+            }
+        }
+
         //3)
         startRecording.onclick = function () {
             // recording started
             startRecording.disabled = true;
+
+            micButton.setAttribute("style", "border-radius: 50%; border: 3px solid red;");
+            setTimeout(() => {
+                    micButton.setAttribute("style", "border-radius: 50%; border: 3px solid green;");
+                    // 👇️ hides element (still takes up space on page)
+                    // box.style.visibility = 'hidden';
+            }, 1000);
+
 
             // make use of HTML 5/WebRTC, JavaScript getUserMedia()
             // to capture the browser microphone stream
@@ -269,12 +306,14 @@
                         // making use of socket.io-stream for bi-directional
                         // streaming, create a stream
                         var stream = ss.createStream();
+                        blobUrl = URL.createObjectURL(blob);
                         // stream directly to server
                         // it will be temp. stored locally
                         ss(socket).emit('stream-transcribe', stream, {
                             name: 'stream.wav', 
                             size: blob.size
                         });
+                        recordingExists = true;
                         // pipe the audio blob to the read stream
                         ss.createBlobReadStream(blob).pipe(stream);
                     }
@@ -346,6 +385,7 @@
         var correct_word = "";
         // Get the modal
         var finished_modal = document.getElementById("finished_modal");
+        var not_available = document.getElementById("not_available");
 
         // Get the <span> element that closes the modal
         var span = document.getElementsByClassName("close")[0];
@@ -443,17 +483,17 @@
         //         diagnostic.textContent += "\nWord: " + correct_word;
         //     }
         // }
-        const resultpreview = document.getElementById('results');
+        //const resultpreview = document.getElementById('results');
         socketio.on('results', function (data) {
             // recording stopped
             recordAudio.stopRecording();
             startRecording.disabled = false;
-            stopRecording.disabled = true;
+           // stopRecording.disabled = true;
             // show the results on the screen
-            if(data && data.results[0] && data.results[0].alternatives[0]){
-            resultpreview.innerHTML += " " + data.results[0].alternatives[0].transcript;
-            //data.results[0].alternatives.forEach( (item,index)=> console.log(item,index));
-            }
+            // if(data && data.results[0] && data.results[0].alternatives[0]){
+            // resultpreview.innerHTML += " " + data.results[0].alternatives[0].transcript;
+            // //data.results[0].alternatives.forEach( (item,index)=> console.log(item,index));
+            // }
             console.log(data.results[0].alternatives.length);
             console.log(data.results[0].alternatives[0]);
             var word = data.results[0].alternatives[0].transcript;
@@ -477,7 +517,8 @@
                     bg.style.backgroundColor = "white";
                     getNextWord();
                 }
-                diagnostic.textContent += "\nWord: " + correct_word;
+                diagnostic.textContent += "\r\n";
+                diagnostic.textContent += "Word: " + correct_word;
             }
             
             
