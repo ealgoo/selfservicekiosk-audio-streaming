@@ -63,6 +63,7 @@ const socketIo = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const https = require('https');
 const cors = require('cors');
 const express = require('express');
 const ss = require('socket.io-stream');
@@ -97,7 +98,14 @@ function setupServer() {
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname + '/example'+ example + '.html'));
     });
-    server = http.createServer(app);
+    server = https.createServer(
+	    		// Provide the private and public key to the server by reading each
+		// file's content with the readFileSync() method.
+	    {
+	      key: fs.readFileSync("key.pem"),
+	      cert: fs.readFileSync("cert.pem"),
+	    },
+	    app);
     io = socketIo(server);
     server.listen(port, () => {
         console.log('Running server on port %s', port);
