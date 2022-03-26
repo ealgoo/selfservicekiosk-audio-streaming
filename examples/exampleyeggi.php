@@ -40,20 +40,6 @@
           font-size: 20px;
           margin-right: 20px;
         }
-
-        button {
-          font-family: OCR A Std, monospace;
-          text-align: center;
-          padding: 10px;
-          font-size: 20px;
-          margin-right: 20px;
-          background-color: rgb(210, 240, 250);
-          margin-left: 20px;
-          margin-top: 20px;
-          margin-bottom: 20px;
-          padding-bottom: 10%;
-          position:relative;
-        }
         
         div {
           height: 100px;
@@ -102,12 +88,7 @@
           border: 1px solid #888;
           width: 80%; /* Could be more or less, depending on screen size */
         }
-        .img:hover {
-            box-shadow: 5px 5px 5px gray;
-        }
-        button:hover{
-            box-shadow: 5px 5px 5px gray;
-        }
+        
         /* The Close Button */
         .close {
           color: #aaa;
@@ -128,22 +109,12 @@
             width: 50%;
             padding: 10px;
         }
-        .img{
-            border-radius: 50%;
-            border: 5px solid green;
-            position: fixed;
-            left: 50%;
-            margin-left: -120px; 
-        }
         
         .button {
           font-family: OCR A Std, monospace;
           text-align: center;
           padding: 20px;
           font-size: 30px;
-          top: 40%;
-          float: center;
-          /* position: relative; */
         }
         
         body {
@@ -212,16 +183,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io-stream/0.9.1/socket.io-stream.js"></script>
 </head>
 
-<body>
-    <h1>Speech Therapy WebApp </h1>
+
+<body> <h1>Speech Therapy WebApp </h1>
+    <button class="button" onclick="pronounce();"> Play computer's pronunciation </button>
     <mic class="center" id="start-recording">
         <img src="https://www.pngitem.com/pimgs/m/561-5619978_recording-symbol-png-free-radio-microphone-icon-transparent.png"
-            class = "img" id = "mic_button" height="250" width="240" />
+            id = "mic_button" height="250" width="240" style="border-radius: 50%; border: 3px solid green;" />
     </mic>
-    <button class="button" onclick="pronounce();" style="top: 40%; left:50%; margin-left: -50%; position:relative" > Play computer's pronunciation </button>
-    
-    <button class="button" onclick="playP();"style="top: 55%; " > Play my pronunciation  </button>
-    <button class="button" onclick="getNextWord();" > skip </button>
+    <button class="button" onclick="playP()" ;> Play my pronunciation  </button>
+    <button class="button" onclick="skip()" ;> skip </button>
     <div>
         <p class="output"><em></em></p>
     </div>
@@ -254,9 +224,18 @@
         <h3>Mastered</h3>
         <ul id="mastered" style="color:gray"></ul>
     </div>
-    <!-- -recording" disabled>Stop Recording</button> -->
-   <!-- <textarea id="results"></textarea> -->
-    </div>
+
+	<?php 
+	  $conn = new mysqli("localhost", "yeggi", "yeggi", "mysql");
+	  if ($conn->connect_error) {
+	    die("ERROR: Unable to connect: " . $conn->connect_error);
+	  } 
+	  echo 'Connected to the database.<br>';
+	  $result = $conn->query("SELECT word FROM groupA");
+	  $res = mysqli_fetch_all($result, MYSQLI_ASSOC ); 
+	  $result->close();
+	  $conn->close();
+	?>
 
     <script>
         var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
@@ -268,7 +247,6 @@
         //const stopRecording = document.getElementById('stop-recording');
         let recordAudio;
         var blobUrl="";
-        var senttime=0;
         const socketio = io();
         const socket = socketio.on('connect', function () {
             startRecording.disabled = false;
@@ -294,7 +272,13 @@
             // recording started
             startRecording.disabled = true;
 
-            micButton.setAttribute("style", "border-radius: 50%; border: 5px solid red;");
+            micButton.setAttribute("style", "border-radius: 50%; border: 3px solid red;");
+            setTimeout(() => {
+                    micButton.setAttribute("style", "border-radius: 50%; border: 3px solid green;");
+                    // 👇️ hides element (still takes up space on page)
+                    // box.style.visibility = 'hidden';
+            }, 1000);
+
 
             // make use of HTML 5/WebRTC, JavaScript getUserMedia()
             // to capture the browser microphone stream
@@ -332,27 +316,14 @@
                         // streaming, create a stream
                         var stream = ss.createStream();
                         blobUrl = URL.createObjectURL(blob);
-			let date_ob = new Date();
-
-			// current date
-			let date = ("0" + date_ob.getDate()).slice(-2);
-			let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-			let year = date_ob.getFullYear();
-			let hours = date_ob.getHours().toString().padStart(2,'0');
-			let minutes = date_ob.getMinutes().toString().padStart(2,'0');
-			let seconds = date_ob.getSeconds().toString().padStart(2,'0');
-			let filename = year + month + date + "_" + hours + minutes + seconds+"_"+ correct_word + ".wav";
-
                         // stream directly to server
                         // it will be temp. stored locally
                         ss(socket).emit('stream-transcribe', stream, {
-                            name: filename, 
+                            name: 'stream.wav', 
                             size: blob.size
-			});
+                        });
                         recordingExists = true;
                         // pipe the audio blob to the read stream
-                        const d = new Date();
-                        senttime = d.getTime();
                         ss.createBlobReadStream(blob).pipe(stream);
                     }
                 });
@@ -372,122 +343,18 @@
         //recordAudio.startRecording();
         // };
 
-        let words = [
-            {
-                id: "swirl",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "word",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            }
-            , {
-                id: "standard",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "forward",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "awkward",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "word",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "girl",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            }
-            , {
-                id: "beard",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "absurd",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "feared",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "barley",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "parlor",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            }
-            , {
-                id: "knarl",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "hurl",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "aboard",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "accord",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "hurdl",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            }
-            , {
-                id: "underworld",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            },
-            {
-                id: "scared",
-                status: "new",
-                incorrect: 0,
-                correct: 0
-            }
-        ];
+	  var items = [ <?php echo(json_encode([$res])); ?> ] ;
+	  let words = [];
+	  for( [key, item] of Object.entries(items)) {
+		words.push( 
+	  {
+		id: item['word'], 
+		status: "new",
+		incorrect: 0,
+		correct: 0
+	  });
+	  }
+	  conlose.log('hey! - ', words);
         var grammar = '#JSGF V1.0; grammar word; public <word> = ' + words.map(function (item) { return item["id"]; }).join(' | ') + ' ;';
         var recognition = new SpeechRecognition();
         var speechRecognitionList = new SpeechGrammarList();
@@ -573,16 +440,40 @@
             diagnostic.textContent = correct_word;
             finished_modal.style.display = "none";
         }
-
-	socketio.on('emotion', function (emotion) {
-		console.log("emotion: "+emotion)
-	});
-  
+        // recognition.onresult = function (event) {
+        //     // The SpeechRecognitionEvent results property returns a SpeechRecognitionResultList object
+        //     // The SpeechRecognitionResultList object contains SpeechRecognitionResult objects.
+        //     // It has a getter so it can be accessed like an array
+        //     // The first [0] returns the SpeechRecognitionResult at the last position.
+        //     // Each SpeechRecognitionResult object contains SpeechRecognitionAlternative objects that contain individual results.
+        //     // These also have getters so they can be accessed like arrays.
+        //     // The second [0] returns the SpeechRecognitionAlternative at position 0.
+        //     // We then return the transcript property of the SpeechRecognitionAlternative object
+        //     var word = event.results[0][0].transcript;
+        //     diagnostic.textContent = 'Result received: ' + word;
+        //     console.log('Confidence: ' + event.results[0][0].confidence);
+        //     if (word === correct_word) {
+        //         bg.style.backgroundColor = "green";
+        //         words[count].correct++;
+        //         if (words[count].correct > words[count].incorrect) words[count].status = "mastered";
+        //         diagnostic.textContent = correct_word;
+        //         getNextWord();
+        //         wrong_count = 0;
+        //     }
+        //     else {
+        //         words[count].status = "learning";
+        //         bg.style.backgroundColor = "red";
+        //         words[count].incorrect++;
+        //         wrong_count++;
+        //         if (wrong_count == 3) {
+        //             bg.style.backgroundColor = "white";
+        //             getNextWord();
+        //         }
+        //         diagnostic.textContent += "\nWord: " + correct_word;
+        //     }
+        // }
+        //const resultpreview = document.getElementById('results');
         socketio.on('results', function (data) {
-            micButton.setAttribute("style", "border-radius: 50%; border: 5px solid green;");
-            const d = new Date();
-            var diff = d.getTime()-senttime;
-            console.log("lag: " + diff);
             // recording stopped
             recordAudio.stopRecording();
             startRecording.disabled = false;
@@ -599,7 +490,7 @@
             diagnostic.textContent = 'Result received: ' + word;
             console.log('Confidence: ' + confidence);
             if (word === correct_word) {
-                bg.style.backgroundColor = "#86E389";
+                bg.style.backgroundColor = "green";
                 words[count].correct++;
                 if (words[count].correct > words[count].incorrect) words[count].status = "mastered";
                 diagnostic.textContent = correct_word;
@@ -608,7 +499,7 @@
             }
             else {
                 words[count].status = "learning";
-                bg.style.backgroundColor = "#E9857D";
+                bg.style.backgroundColor = "red";
                 words[count].incorrect++;
                 wrong_count++;
                 if (wrong_count == 3) {

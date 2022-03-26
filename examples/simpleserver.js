@@ -60,6 +60,7 @@ const speechContexts = [
 
 // load all the libraries for the server
 const socketIo = require('socket.io');
+const socketIo_client = require('socket.io-client');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -111,6 +112,8 @@ function setupServer() {
         console.log('Running server on port %s', port);
     });
 
+    emotion_io = socketIo_client.connect("http://0.0.0.0:7777");
+
     // Listener, once the client connect to the server socket
     io.on('connect', (client) => {
         console.log(`Client connected [id=${client.id}]`);
@@ -142,6 +145,7 @@ function setupServer() {
             client.emit('results', results);
             console.log("dataURL:", dataURL)
             console.log("results:", results)
+
         });
 
         // when the client sends 'stream' events
@@ -171,7 +175,10 @@ function setupServer() {
                 console.log(results);
                 client.emit('results', results);
             });
-        });
+	    
+
+		    
+	});
 
         // when the client sends 'tts' events
         ss(client).on('tts', function(text) {
@@ -408,7 +415,6 @@ function setupTTS(){
       audioContent: chunk.toString('base64')
     };
     console.log(request);
-    //console.log(request);
     stream.write(request);
   });
 
@@ -465,7 +471,14 @@ function setupTTS(){
   audio.on('end', function() {
     console.log('audio: on end');
     //fileWriter.end();
-  });
+    //now send to emotion server
+    //var toArray = require('stream-to-array')
+    //emotion_io.emit("emotion", {'filename':path.basename(data.name), 'buffer':toArray(stream)}, function(emotion) { 
+//	console.log("emotion = "+emotion);
+//	client.emit('emotion', emotion);
+ //   });
+
+ });
 };
 
  /*
